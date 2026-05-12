@@ -61,7 +61,7 @@ async function getAttachmentByTransactionId(transactionId) {
           "Content-Type": "application/json",
           Authorization: `Session ${session.sessionId}`,
         },
-      }
+      },
     );
     const expenseData = await expenseResponse.json();
     console.log("Expense Response:");
