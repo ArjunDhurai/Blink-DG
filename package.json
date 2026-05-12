@@ -2,9 +2,9 @@
   "name": "blink-dg",
   "version": "1.0.0",
   "description": "Clarizen V2.0 API utility scripts",
-  "main": "Login_API.js",
+  "main": "server.js",
   "scripts": {
-    "start": "node Login_API.js"
+    "start": "node server.js"
   },
   "engines": {
     "node": ">=20"
