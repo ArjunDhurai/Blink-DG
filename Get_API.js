@@ -35,5 +35,5 @@ async function getAttachments(entityId) {
 }
 
 // Usage: node Get_API.js /WorkItem/12345
-const ENTITY_ID = process.argv[2] || "/WorkItem/12345";
+const ENTITY_ID = process.argv[2] || "/WorkItem/6805469249";
 getAttachments(ENTITY_ID);
