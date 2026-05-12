@@ -2,17 +2,12 @@ const { clarizenLogin } = require("./Login_API");
 
 const BASE_URL = "https://api.clarizen.com/v2.0/services";
 
-function normalizeLinkId(linkId) {
-  const match = linkId.match(/\/ExpenseEntryAttachmentLink\/(.+)$/);
-  return match ? match[1] : linkId;
+function normalizeId(value) {
+  const match = value.match(/\/(?:[A-Za-z]+)\/(.+)$/);
+  return match ? match[1] : value;
 }
 
-function normalizeExpenseId(entityId) {
-  const match = entityId.match(/\/(?:Expense|ExpenseEntry)\/(.+)$/);
-  return match ? match[1] : entityId;
-}
-
-async function getAttachmentByLinkId(linkId) {
+async function getAttachmentByTransactionId(transactionId) {
   console.log("Logging in to Clarizen...");
   const session = await clarizenLogin();
 
@@ -22,10 +17,10 @@ async function getAttachmentByLinkId(linkId) {
     return;
   }
 
-  const rawLinkId = normalizeLinkId(linkId);
+  const rawTransactionId = normalizeId(transactionId);
   console.log("Session ID:", session.sessionId);
   console.log("--------------------------------------------------");
-  console.log("Fetching attachment link by id:", linkId);
+  console.log("Fetching attachment link for transaction id:", transactionId);
   console.log("--------------------------------------------------");
 
   const response = await fetch(`${BASE_URL}/data/query`, {
@@ -42,8 +37,8 @@ async function getAttachmentByLinkId(linkId) {
   const data = await response.json();
   const entities = Array.isArray(data.entities) ? data.entities : [];
   const match = entities.find((row) => {
-    const value = row?.id || "";
-    return String(value).includes(rawLinkId);
+    const rowTransactionId = normalizeId(row?.Entity?.id || "");
+    return rowTransactionId === rawTransactionId;
   });
 
   if (!match) {
@@ -52,13 +47,12 @@ async function getAttachmentByLinkId(linkId) {
     return data;
   }
 
-  const output = { entity: match };
   console.log("Attachment Link Response:");
-  console.log(JSON.stringify(output, null, 2));
+  console.log(JSON.stringify({ entity: match }, null, 2));
 
   const expenseId = match?.Entity?.id;
   if (expenseId) {
-    const cleanedExpenseId = normalizeExpenseId(expenseId);
+    const cleanedExpenseId = normalizeId(expenseId);
     const expenseResponse = await fetch(
       `${BASE_URL}/data/objects/Expense/${cleanedExpenseId}?fields=Name`,
       {
@@ -74,9 +68,9 @@ async function getAttachmentByLinkId(linkId) {
     console.log(JSON.stringify(expenseData, null, 2));
   }
 
-  return output;
+  return match;
 }
 
-const LINK_ID = process.argv[2] || "/ExpenseEntryAttachmentLink/2hywthvt3oxp395diba6mexiw1313";
+const TRANSACTION_ID = process.argv[2] || "/Expense/6yyvnzllntgy7hyr4q110mggh131";
 
-getAttachmentByLinkId(LINK_ID);
+getAttachmentByTransactionId(TRANSACTION_ID);
