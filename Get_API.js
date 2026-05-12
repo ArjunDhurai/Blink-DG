@@ -7,6 +7,11 @@ function normalizeEntityId(entityId) {
   return match ? match[1] : entityId;
 }
 
+function entityToExpenseId(entityId) {
+  const match = entityId.match(/\/Expense\/(.+)$/);
+  return match ? match[1] : entityId;
+}
+
 async function getAttachments(entityId) {
   console.log("Logging in to Clarizen...");
   const session = await clarizenLogin();
@@ -44,6 +49,25 @@ async function getAttachments(entityId) {
   const output = filtered.length > 0 ? { entities: filtered } : data;
   console.log("Attachment Response:");
   console.log(JSON.stringify(output, null, 2));
+
+  const firstEntityId = output?.entities?.[0]?.Entity?.id;
+  if (firstEntityId) {
+    const expenseId = entityToExpenseId(firstEntityId);
+    const expenseResponse = await fetch(
+      `${BASE_URL}/data/objects/Expense/${expenseId}?fields=Name`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Session ${session.sessionId}`,
+        },
+      }
+    );
+    const expenseData = await expenseResponse.json();
+    console.log("Expense Response:");
+    console.log(JSON.stringify(expenseData, null, 2));
+  }
+
   return output;
 }
 
