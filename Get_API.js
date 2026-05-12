@@ -1,6 +1,7 @@
 const { clarizenLogin } = require("./Login_API");
 
-const ATTACHMENT_URL = "https://api.clarizen.com/v2.0/services/attachment/get";
+const URL =
+  "https://api.clarizen.com/v2.0/services/attachment/gethttps://api.clarizen.com/v2.0/services/data/currentuser";
 
 async function getAttachment(entityId) {
   const session = await clarizenLogin();
@@ -11,13 +12,13 @@ async function getAttachment(entityId) {
     return;
   }
 
-  const response = await fetch(ATTACHMENT_URL, {
-    method: "POST",
+  const response = await fetch(URL, {
+    method: "GET",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Session ${session.sessionId}`,
     },
-    body: JSON.stringify({ entityId }),
+    // body: JSON.stringify({ entityId }),
   });
 
   const data = await response.json();
