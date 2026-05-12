@@ -24,7 +24,6 @@ async function getAttachments(entityId) {
       Authorization: `Session ${session.sessionId}`,
     },
     body: JSON.stringify({
-      // q: `Select Entity, CreatedOn, CreatedBy From ExpenseSheetAttachmentLink Where Entity = '${entityId}'`,
       q: `Select Entity, CreatedOn, CreatedBy From ExpenseEntryAttachmentLink Where Entity = '${entityId}'`,
     }),
   });
@@ -35,11 +34,6 @@ async function getAttachments(entityId) {
   return data;
 }
 
-// Usage: node Get_API.js /ExpenseSheet/144112961
-// const ENTITY_ID = process.argv[2] || "/ExpenseSheet/144112961";
-// const ENTITY_ID = "/ExpenseSheet/144112961";
-const ENTITY_ID = "/ExpenseEntry/556194113";
-
-// const ENTITY_ID = "/ExpenseSheet";
+const ENTITY_ID = process.argv[2] || "/ExpenseEntry/556194113";
 
 getAttachments(ENTITY_ID);
