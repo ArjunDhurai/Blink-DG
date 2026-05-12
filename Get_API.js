@@ -30,7 +30,7 @@ async function getAttachmentByTransactionId(transactionId) {
       Authorization: `Session ${session.sessionId}`,
     },
     body: JSON.stringify({
-      q: `Select Entity, CreatedOn, CreatedBy From ExpenseEntryAttachmentLink`,
+      q: `Select Entity, CreatedOn, CreatedBy From ExpenseSheetAttachmentLink`,
     }),
   });
 
@@ -38,7 +38,7 @@ async function getAttachmentByTransactionId(transactionId) {
   const entities = Array.isArray(data.entities) ? data.entities : [];
   const match = entities.find((row) => {
     const rowTransactionId = normalizeId(row?.Entity?.id || "");
-    return rowTransactionId === rawTransactionId;
+    return rowTransactionId === `ExpenseSheet/${rawTransactionId}` || rowTransactionId === rawTransactionId;
   });
 
   if (!match) {
@@ -50,11 +50,11 @@ async function getAttachmentByTransactionId(transactionId) {
   console.log("Attachment Link Response:");
   console.log(JSON.stringify({ entity: match }, null, 2));
 
-  const expenseId = match?.Entity?.id;
-  if (expenseId) {
-    const cleanedExpenseId = normalizeId(expenseId);
+  const expenseSheetId = match?.Entity?.id;
+  if (expenseSheetId) {
+    const cleanedExpenseSheetId = normalizeId(expenseSheetId);
     const expenseResponse = await fetch(
-      `${BASE_URL}/data/objects/Expense/${cleanedExpenseId}?fields=Name`,
+      `${BASE_URL}/data/objects/ExpenseSheet/${cleanedExpenseSheetId}?fields=Name`,
       {
         method: "GET",
         headers: {
@@ -64,7 +64,7 @@ async function getAttachmentByTransactionId(transactionId) {
       }
     );
     const expenseData = await expenseResponse.json();
-    console.log("Expense Response:");
+    console.log("ExpenseSheet Response:");
     console.log(JSON.stringify(expenseData, null, 2));
   }
 
