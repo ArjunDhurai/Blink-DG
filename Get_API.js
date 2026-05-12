@@ -2,17 +2,17 @@ const { clarizenLogin } = require("./Login_API");
 
 const BASE_URL = "https://api.clarizen.com/v2.0/services";
 
-function normalizeEntityId(entityId) {
-  const match = entityId.match(/\/(?:[A-Za-z]+)\/(\d+)/);
+function normalizeLinkId(linkId) {
+  const match = linkId.match(/\/ExpenseEntryAttachmentLink\/(.+)$/);
+  return match ? match[1] : linkId;
+}
+
+function normalizeExpenseId(entityId) {
+  const match = entityId.match(/\/(?:Expense|ExpenseEntry)\/(.+)$/);
   return match ? match[1] : entityId;
 }
 
-function entityToExpenseId(entityId) {
-  const match = entityId.match(/\/Expense\/(.+)$/);
-  return match ? match[1] : entityId;
-}
-
-async function getAttachments(entityId) {
+async function getAttachmentByLinkId(linkId) {
   console.log("Logging in to Clarizen...");
   const session = await clarizenLogin();
 
@@ -22,10 +22,10 @@ async function getAttachments(entityId) {
     return;
   }
 
-  const rawId = normalizeEntityId(entityId);
+  const rawLinkId = normalizeLinkId(linkId);
   console.log("Session ID:", session.sessionId);
   console.log("--------------------------------------------------");
-  console.log("Fetching attachments for entity:", entityId);
+  console.log("Fetching attachment link by id:", linkId);
   console.log("--------------------------------------------------");
 
   const response = await fetch(`${BASE_URL}/data/query`, {
@@ -41,20 +41,26 @@ async function getAttachments(entityId) {
 
   const data = await response.json();
   const entities = Array.isArray(data.entities) ? data.entities : [];
-  const filtered = entities.filter((row) => {
-    const value = row?.Entity?.id || row?.Entity || "";
-    return String(value).includes(rawId);
+  const match = entities.find((row) => {
+    const value = row?.id || "";
+    return String(value).includes(rawLinkId);
   });
 
-  const output = filtered.length > 0 ? { entities: filtered } : data;
-  console.log("Attachment Response:");
+  if (!match) {
+    console.log("Attachment Response:");
+    console.log(JSON.stringify(data, null, 2));
+    return data;
+  }
+
+  const output = { entity: match };
+  console.log("Attachment Link Response:");
   console.log(JSON.stringify(output, null, 2));
 
-  const firstEntityId = output?.entities?.[0]?.Entity?.id;
-  if (firstEntityId) {
-    const expenseId = entityToExpenseId(firstEntityId);
+  const expenseId = match?.Entity?.id;
+  if (expenseId) {
+    const cleanedExpenseId = normalizeExpenseId(expenseId);
     const expenseResponse = await fetch(
-      `${BASE_URL}/data/objects/Expense/${expenseId}?fields=Name`,
+      `${BASE_URL}/data/objects/Expense/${cleanedExpenseId}?fields=Name`,
       {
         method: "GET",
         headers: {
@@ -71,6 +77,6 @@ async function getAttachments(entityId) {
   return output;
 }
 
-const ENTITY_ID = process.argv[2] || "/ExpenseEntry/556194113";
+const LINK_ID = process.argv[2] || "/ExpenseEntryAttachmentLink/2hywthvt3oxp395diba6mexiw1313";
 
-getAttachments(ENTITY_ID);
+getAttachmentByLinkId(LINK_ID);
