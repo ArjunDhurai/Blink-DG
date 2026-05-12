@@ -20,7 +20,7 @@ async function getAttachmentByTransactionId(transactionId) {
   const rawTransactionId = normalizeId(transactionId);
   console.log("Session ID:", session.sessionId);
   console.log("--------------------------------------------------");
-  console.log("Fetching attachment link for transaction id:", transactionId);
+  console.log("Fetching attachment link for transaction id:", rawTransactionId);
   console.log("--------------------------------------------------");
 
   const response = await fetch(`${BASE_URL}/data/query`, {
@@ -71,6 +71,6 @@ async function getAttachmentByTransactionId(transactionId) {
   return match;
 }
 
-const TRANSACTION_ID = process.argv[2] || "/Expense/6yyvnzllntgy7hyr4q110mggh131";
+const TRANSACTION_ID = process.argv[2] || "556194113";
 
 getAttachmentByTransactionId(TRANSACTION_ID);
