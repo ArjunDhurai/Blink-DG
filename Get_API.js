@@ -7,7 +7,7 @@ function normalizeId(value) {
   return match ? match[1] : value;
 }
 
-async function getAttachmentByTransactionId(transactionId) {
+async function getExpenseSheetAttachment(expenseSheetId) {
   console.log("Logging in to Clarizen...");
   const session = await clarizenLogin();
 
@@ -17,10 +17,10 @@ async function getAttachmentByTransactionId(transactionId) {
     return;
   }
 
-  const rawTransactionId = normalizeId(transactionId);
+  const rawId = normalizeId(expenseSheetId);
   console.log("Session ID:", session.sessionId);
   console.log("--------------------------------------------------");
-  console.log("Fetching attachment link for transaction id:", rawTransactionId);
+  console.log("Fetching attachment link for ExpenseSheet id:", rawId);
   console.log("--------------------------------------------------");
 
   const response = await fetch(`${BASE_URL}/data/query`, {
@@ -36,10 +36,7 @@ async function getAttachmentByTransactionId(transactionId) {
 
   const data = await response.json();
   const entities = Array.isArray(data.entities) ? data.entities : [];
-  const match = entities.find((row) => {
-    const rowTransactionId = normalizeId(row?.Entity?.id || "");
-    return rowTransactionId === `ExpenseSheet/${rawTransactionId}` || rowTransactionId === rawTransactionId;
-  });
+  const match = entities.find((row) => normalizeId(row?.Entity?.id || "") === rawId);
 
   if (!match) {
     console.log("Attachment Response:");
@@ -50,11 +47,11 @@ async function getAttachmentByTransactionId(transactionId) {
   console.log("Attachment Link Response:");
   console.log(JSON.stringify({ entity: match }, null, 2));
 
-  const expenseSheetId = match?.Entity?.id;
-  if (expenseSheetId) {
-    const cleanedExpenseSheetId = normalizeId(expenseSheetId);
+  const sheetId = match?.Entity?.id;
+  if (sheetId) {
+    const cleanedId = normalizeId(sheetId);
     const expenseResponse = await fetch(
-      `${BASE_URL}/data/objects/ExpenseSheet/${cleanedExpenseSheetId}?fields=Name`,
+      `${BASE_URL}/data/objects/ExpenseSheet/${cleanedId}?fields=Name`,
       {
         method: "GET",
         headers: {
@@ -71,6 +68,6 @@ async function getAttachmentByTransactionId(transactionId) {
   return match;
 }
 
-const TRANSACTION_ID = process.argv[2] || "556194113";
+const EXPENSE_SHEET_ID = process.argv[2] || "556194113";
 
-getAttachmentByTransactionId(TRANSACTION_ID);
+getExpenseSheetAttachment(EXPENSE_SHEET_ID);
