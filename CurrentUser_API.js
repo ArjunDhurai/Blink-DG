@@ -2,7 +2,7 @@ const { clarizenLogin } = require("./Login_API");
 
 const BASE_URL = "https://api.clarizen.com/v2.0/services";
 
-async function getAttachments(entityId) {
+async function getCurrentUser() {
   console.log("Logging in to Clarizen...");
   const session = await clarizenLogin();
 
@@ -13,27 +13,26 @@ async function getAttachments(entityId) {
   }
 
   console.log("Session ID:", session.sessionId);
+  console.log("User ID   :", session.userId);
   console.log("--------------------------------------------------");
-  console.log("Fetching attachments for entity:", entityId);
+  console.log("Fetching current user details...");
   console.log("--------------------------------------------------");
 
-  const response = await fetch(`${BASE_URL}/data/query`, {
-    method: "POST",
+  const fields = "Name,Email,FirstName,LastName,Username";
+  const url = `${BASE_URL}/data/objects/User/${session.userId}?fields=${fields}`;
+
+  const response = await fetch(url, {
+    method: "GET",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Session ${session.sessionId}`,
     },
-    body: JSON.stringify({
-      q: `Select Entity, CreatedOn, CreatedBy From WorkItemAttachmentLink Where Entity = '${entityId}'`,
-    }),
   });
 
   const data = await response.json();
-  console.log("Attachment Response:");
+  console.log("Current User Response:");
   console.log(JSON.stringify(data, null, 2));
   return data;
 }
 
-// Usage: node Get_API.js /WorkItem/12345
-const ENTITY_ID = process.argv[2] || "/WorkItem/12345";
-getAttachments(ENTITY_ID);
+getCurrentUser();
