@@ -1,6 +1,6 @@
 // Generate api Script
 async function clarizenLogin() {
-  
+
   const url = "https://api.clarizen.com/v2.0/services/authentication/login";
 
   const response = await fetch(url, {
@@ -15,8 +15,12 @@ async function clarizenLogin() {
   });
 
   const data = await response.json();
-  console.log(data);
   return data;
 }
 
-clarizenLogin();
+// Run directly if this file is the entry point
+if (require.main === module) {
+  clarizenLogin().then((data) => console.log(data));
+}
+
+module.exports = { clarizenLogin };
